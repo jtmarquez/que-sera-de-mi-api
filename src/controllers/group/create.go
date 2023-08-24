@@ -9,7 +9,8 @@ import (
 )
 
 func CreateGroupHandler(c *gin.Context) {
-	err := group.CreateGroupHandler(group.GroupData[0])
+	result, err := group.CreateGroupHandler(group.GroupData[0])
+	fmt.Println(result)
 
 	if err != nil {
 		fmt.Println(err)

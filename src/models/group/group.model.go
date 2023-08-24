@@ -16,22 +16,22 @@ var GroupData = []Group{
 	{ID: "1", Name: "Group Name"},
 }
 
-func createGroup(ctx context.Context, db mongodb_handler.DbHandler, group Group) error {
-	_, err := db.Collection(GroupEntityName).InsertOne(ctx, group)
+func createGroup(ctx context.Context, db mongodb_handler.DbHandler, group Group) (interface{}, error) {
+	resultGroup, err := db.Collection(GroupEntityName).InsertOne(ctx, group)
 
 	if err != nil {
-		return err
+		return Group{}, err
 	}
 
-	return nil
+	return resultGroup, nil
 }
 
-func CreateGroupHandler(group Group) error {
-	var handler mongodb_handler.DbCommandCallback = func(ctx context.Context, db mongodb_handler.DbHandler) error {
+func CreateGroupHandler(group Group) (interface{}, error) {
+	var handler = func(ctx context.Context, db mongodb_handler.DbHandler) (interface{}, error) {
 		return createGroup(ctx, db, group)
 	}
 
-	err := mongodb_handler.ExecuteDbCommand(handler)
+	result, err := mongodb_handler.ExecuteDbCommand(handler)
 
-	return err
+	return result, err
 }
