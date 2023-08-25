@@ -8,5 +8,5 @@ import (
 
 func Setup(router *gin.RouterGroup) {
 	router.GET("", group_controllers.GetGroupHandler)
-	router.POST("", group_controllers.CreateGroupHandler)
+	router.POST("", group_controllers.CreateGroupController)
 }

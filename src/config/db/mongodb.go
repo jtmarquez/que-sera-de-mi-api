@@ -2,6 +2,7 @@ package mongodb_handler
 
 import (
 	"context"
+	"fmt"
 	dotenv "que-sera-de-mi/src/config/env_vars"
 	"sync"
 	"time"
@@ -11,7 +12,6 @@ import (
 )
 
 type DbHandler = *mongo.Database
-type DbCommandCallback func(ctx context.Context, db DbHandler) (interface{}, error)
 
 var (
 	mongoOnce sync.Once
@@ -21,7 +21,7 @@ var (
 
 const TIMEOUT = 10
 
-func getConnection(ctx context.Context) (DbHandler, error) {
+func connect(ctx context.Context) (DbHandler, error) {
 	dbUrl := dotenv.GetEnvironmentVariable("DB_URL")
 	dbName := dotenv.GetEnvironmentVariable("DB_NAME")
 
@@ -43,27 +43,22 @@ func getConnection(ctx context.Context) (DbHandler, error) {
 	return mongoDB, nil
 }
 
-func ExecuteDbCommand(callback DbCommandCallback) (interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
-	defer cancel()
+func GetConnection() (DbHandler, context.Context, error) {
+	ctx, _ := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
+	// defer cancel()
 
 	var getMongoConnection = func() {
-		getConnection(ctx)
+		connect(ctx)
 	}
 
 	mongoOnce.Do(getMongoConnection)
 
 	connectionErr, db := mongoErr, mongoDB
+	fmt.Println(connectionErr, db)
 
 	if connectionErr != nil {
-		return nil, connectionErr
+		return nil, nil, connectionErr
 	}
 
-	result, err := callback(ctx, db)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return db, ctx, nil
 }
